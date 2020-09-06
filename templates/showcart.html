@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart Items</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+</head>
+<body>
+<script>
+  function clearcart(){ $.ajax({
+   type: "GET",
+   datatype:'json',
+   contentType: 'application/x-www-form-urlencoded',
+   url: "{% url 'clearcart' %}",
+   success: function(msg){
+   alert("Succces");
+   if (msg.status == "True"){
+   window.location.href = '{% url 'showcart' %}';
+   }}
+                    });}
+
+</script>
+<button class="btn btn-primary" onclick="clearcart();">Clear Cart</button>
+
+<button class="btn btn-success" onclick="window.location.href='{% url 'allproducts' %}'">Back</button>
+
+    <h3 style="text-align:center;">Grand Total $</h3>
+    <h3 id="gt" style="text-align:center;"></h3>
+
+<div class="col-lg-12">
+
+<table class="table table-striped">
+    {% if request.session.cart is not None%}
+
+    <thead>
+
+
+        <th>id</th>
+
+       <th>Photo</th>
+        <th>Name</th>
+        <th>Price</th>
+         <th>Quantity</th>
+        <th>Total</th>
+        <th></th>
+
+
+
+
+
+        </thead>
+
+
+        <tbody>
+{% for item in request.session.cart %}
+
+       {% with forloop.counter0 as counter%}
+
+        <tr>
+            {% for j,k in item.items %}
+            {% if j == "Quantity" %}
+
+            <td><label id="num{{counter}}" class="num" >{{k}}</label><br><button  onclick="increment({{item.price}},{{k}},{{counter}});">+</button><button  onclick="decrement({{item.price}},{{k}},{{counter}});">-</button></td>
+            <script>
+                function increment(price,qty,id){
+                //alert("i am inside increment");
+
+                     //var value1 = document.getElementById("num{{counter}}").innerHTML;
+                    //var value1 = $("#num{{counter}}").text();
+                    //alert(value1);
+                    //var intval = parseInt(value1);
+                     //alert('{{k}} {{item.id}}');
+
+
+                    var data = {qty:qty,id:id,price:price};
+                    //alert(name);
+                    $.ajax({
+                    type: "POST",
+                    data:data,
+   datatype:'json',
+   contentType: 'application/x-www-form-urlencoded',
+   url: "{% url 'increment' %}",
+   success: function(msg){
+   //alert("Succces");
+   if (msg.status == "True"){
+   var qty = msg.Qty;
+   //alert(qty);
+   //$("#num{{counter}}").html(String(qty));
+   window.location.href = '{% url 'showcart' %}';
+   }}
+
+
+                    });
+
+
+                }
+            </script>
+            <script>
+                function decrement(price,qty,id){
+                //alert("i am inside increment");
+
+                     //var value1 = document.getElementById("num{{counter}}").innerHTML;
+                    //var value1 = $("#num{{counter}}").text();
+                    //alert(value1);
+                    //var intval = parseInt(value1);
+                     //alert('{{k}} {{item.id}}');
+
+
+                    var data = {qty:qty,id:id,price:price};
+                    //alert(name);
+                    $.ajax({
+                    type: "POST",
+                    data:data,
+   datatype:'json',
+   contentType: 'application/x-www-form-urlencoded',
+   url: "{% url 'decrement' %}",
+   success: function(msg){
+   //alert("Succces");
+   if (msg.status == "True"){
+   var qty = msg.Qty;
+   //alert(qty);
+   //$("#num{{counter}}").html(String(qty));
+   window.location.href = '{% url 'showcart' %}';
+   }}
+
+
+                    });
+
+
+                }
+            </script>
+            {%else%}
+            {% if j == "photo" %}
+            <td><img src="{{k}}" width="100" height="100"></td>
+            {% elif j == "price" %}
+            <td id="price{{k}}">{{k}}$</td>
+            {% elif j == "total"%}
+            <td id="total{{k}}" class="total">{{k}}$</td>
+            {%else%}
+            <td>{{k}}</td>
+             {%endif%}
+            {% endif %}
+            {% endfor %}
+
+
+
+
+
+            <td><input type="button" class="btn btn-danger" id="{{item.id}}" value="Remove From Cart"></td>
+            <script>
+            $('#{{item.id}}').on('click',function (){
+            //alert("i am inside click");
+
+            //textr = document.getElementById("cartr").value;
+
+            //alert(typeof(textr));
+            var iditem = {{counter}};
+            data = {id:iditem};
+
+            //alert("i am inside add to cart");
+                $.ajax({
+   type: "POST",
+   data:data,
+   datatype:'json',
+   contentType: 'application/x-www-form-urlencoded',
+   url: "{% url 'removefromcart'  %}",
+   success: function(msg){
+   //alert("Succces");
+   if (msg.status == "True"){
+   window.location.href = '{% url 'showcart' %}';
+   }}
+                    });
+
+
+
+
+
+         });
+
+
+        </script>
+
+
+
+        </tr>
+
+         {% endwith %}
+        {% endfor%}
+        </tbody>
+    {%else%}
+    <h3>Cart is empty</h3>
+
+
+{% endif %}
+    </table>
+
+    </div>
+<script>
+var total = 0.00;
+    //alert("I am inside num");
+    var stresult = "";
+    //document.getElementById("gt").innerHTML = "Grand Total"
+    var totals = document.getElementsByClassName("total");
+
+    for (var o=0;o<totals.length;o++){
+    //alert("i am inside for loop");
+    //alert(totals[o]);
+    var totstr = totals[o].innerHTML;
+    //alert(typeof(tostr));
+        total+=parseFloat(totstr);
+    }
+    //alert(total);
+
+    stresult =String(total.toFixed(2));
+    $("#gt").html(stresult);
+</script>
+<script>
+
+    $(".num").on("input",function(){
+    var total = 0.00;
+    //alert("I am inside num");
+    var stresult = "";
+    //document.getElementById("gt").innerHTML = "Grand Total"
+    var totals = document.getElementsByClassName("total");
+
+    for (var o=0;o<totals.length;o++){
+    //alert("i am inside for loop");
+    //alert(totals[o]);
+    var totstr = totals[o].innerHTML;
+    //alert(typeof(tostr));
+        total+=parseFloat(totstr);
+    }
+    //alert(total);
+
+    stresult =String(total.toFixed(2))+" $";
+    $("#gt").html(stresult+"$");
+})
+</script>
+
+
+</body>
+</html>

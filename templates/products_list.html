@@ -1,0 +1,115 @@
+<html>
+<head><title>This is the products page</title></head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<body>
+<button style="text-align:center;" class="btn btn-success" onclick="window.location.href='{% url 'showcart' %}'">Go to Cart</button>
+<table class="table table-striped">
+
+<thead>
+<th>ID</th>
+<th>Photo</th>
+<th>Name</th>
+<th>Category</th>
+<th>Price</th>
+<th></th>
+
+
+</thead>
+    <tbody>
+
+{% for i in productdata%}
+    <tr>
+        {% with i.id as counter %}
+        <td>{{i.id}}</td>
+        <td><img src="{{i.photo}}" width="100px" height="100px"/></td>
+        <td>{{i.name}}</td>
+        <td>{{i.category}}</td>
+        <td>{{i.price}}$</td>
+
+        {% if i.id in list1 %}
+        <td><input type="button" id="{{i.id}}" class="btn btn-primary"  value="Added To Cart" ></td>
+        {%else%}
+        <td><input type="button" id="{{i.id}}" class="btn btn-secondary"  value="Add To Cart" ></td>
+        {% endif %}
+        <script>
+                //alert({{request.session.cart.counter }})
+            {% if request.session.cart.counter is not None %}
+                $('#{{i.id}}').html("Added To Cart");
+                {%else%}
+                $('#{{i.id}}').html("Add To Cart");
+            {% endif %}
+        </script>
+
+<script>
+            $('#{{i.id}}').on('click',function (){
+            //alert("i am inside click");
+
+            texta = document.getElementById("{{i.id}}").value;
+
+            //alert(typeof(texta));
+          var a = {{counter}};
+          var data = {data:a};
+            if (texta == "Add To Cart"){
+            //alert("i am inside add to cart");
+                $.ajax({
+   type: "GET",
+   data:data,
+   datatype:'json',
+   contentType: 'application/x-www-form-urlencoded',
+   url: "{% url 'addtocart' id=i.id %}",
+   success: function(msg){
+   //alert("Succces");
+   if (msg.status == "True"){
+   document.getElementById("{{i.id}}").value= "Added To Cart";
+   }}
+                    });}
+
+
+
+
+
+         });
+
+{% endwith %}
+        </script>
+<script>
+            $('#cartr').on('click',function (){
+            //alert("i am inside click");
+
+            textr = document.getElementById("cartr").value;
+
+            alert(typeof(textr));
+
+
+            alert("i am inside add to cart");
+                $.ajax({
+   type: "POST",
+
+   datatype:'json',
+   contentType: 'application/x-www-form-urlencoded',
+   url: "{% url 'removefromcart'%}",
+   success: function(msg){
+   alert("Succces");
+   if (msg.status == "True"){
+   window.location.href = '{% url 'showcart' %}';
+   }}
+                    });
+
+
+
+
+
+         });
+
+
+        </script>
+    </tr>
+{%endfor%}
+    </tbody>
+</table>
+</body>
+
+
+</html>
